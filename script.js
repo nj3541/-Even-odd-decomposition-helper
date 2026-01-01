@@ -1,54 +1,51 @@
-const typeSel = document.getElementById("signalType");
-const ampInp = document.getElementById("amp");
-const omegaInp = document.getElementById("omega");
-const alphaInp = document.getElementById("alpha");
-const tminInp = document.getElementById("tmin");
-const tmaxInp = document.getElementById("tmax");
-const plotArea = document.getElementById("plotArea");
+const input = document.getElementById("seqInput");
+const btn = document.getElementById("decomposeBtn");
+const results = document.getElementById("results");
 
-document.getElementById("plotBtn").addEventListener("click", () => {
-  const type = typeSel.value;
-  const A = parseFloat(ampInp.value) || 0;
-  const w = parseFloat(omegaInp.value) || 0;
-  const a = parseFloat(alphaInp.value) || 0;
-  const tmin = parseFloat(tminInp.value) || -5;
-  const tmax = parseFloat(tmaxInp.value) || 5;
-
-  const N = 60;
-  const dt = (tmax - tmin) / (N - 1);
-  const points = [];
-
-  for (let k = 0; k < N; k++) {
-    const t = tmin + k * dt;
-    let y = 0;
-
-    if (type === "step") {
-      y = t >= 0 ? A : 0;
-    } else if (type === "ramp") {
-      y = t >= 0 ? A * t : 0;
-    } else if (type === "sine") {
-      y = A * Math.sin(w * t);
-    } else if (type === "expdecay") {
-      y = t >= 0 ? A * Math.exp(-a * t) : 0;
-    }
-
-    points.push({ t, y });
+btn.addEventListener("click", () => {
+  const text = input.value.trim();
+  if (!text) {
+    results.textContent = "Please enter a sequence.";
+    return;
   }
 
-  const ys = points.map((p) => p.y);
-  const maxAbs = Math.max(0.001, ...ys.map((v) => Math.abs(v)));
+  const map = new Map();
 
-  const rows = [];
-  rows.push(" t       | signal(t)");
-  rows.push("---------+-----------------------------------------");
-
-  points.forEach((p) => {
-    const barLen = Math.round((Math.abs(p.y) / maxAbs) * 20);
-    const bar = "#".repeat(barLen);
-    rows.push(
-      `${p.t.toFixed(2).padStart(7)} | ${p.y >= 0 ? " " : "-"}${bar}`
-    );
+  text.split(",").forEach((part) => {
+    const [nStr, xStr] = part.split(":").map((s) => s.trim());
+    const n = parseInt(nStr, 10);
+    const x = parseFloat(xStr);
+    if (!isNaN(n) && !isNaN(x)) {
+      map.set(n, x);
+    }
   });
 
-  plotArea.textContent = rows.join("\n");
+  if (!map.size) {
+    results.textContent = "Could not parse input. Use format like: -2:1, -1:0, 0:2, 1:0, 2:1";
+    return;
+  }
+
+  const indices = new Set();
+  map.forEach((_, n) => {
+    indices.add(n);
+    indices.add(-n);
+  });
+  const sorted = Array.from(indices).sort((a, b) => a - b);
+
+  let out = " n   |  x[n]   x[-n]   x_e[n]   x_o[n]\n";
+  out += "-----+----------------------------------\n";
+
+  sorted.forEach((n) => {
+    const xn = map.get(n) ?? 0;
+    const x_neg = map.get(-n) ?? 0;
+    const xe = 0.5 * (xn + x_neg);
+    const xo = 0.5 * (xn - x_neg);
+    out += `${n.toString().padStart(3)} | ${xn.toFixed(3).padStart(6)} ${x_neg
+      .toFixed(3)
+      .padStart(7)} ${xe.toFixed(3).padStart(8)} ${xo
+      .toFixed(3)
+      .padStart(8)}\n`;
+  });
+
+  results.textContent = out;
 });
