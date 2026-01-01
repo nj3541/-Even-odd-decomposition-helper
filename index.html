@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Even-Odd Decomposition | Signals</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>Even / Odd Decomposition</h1>
+    <p>Enter discrete‑time samples x[n] to see even and odd parts.</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Input sequence</h2>
+      <p>Enter pairs n:x separated by commas. Example: -2:1, -1:0, 0:2, 1:0, 2:1</p>
+      <textarea id="seqInput" rows="3"></textarea>
+      <div class="buttons">
+        <button id="decomposeBtn">Decompose</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Results</h2>
+      <div id="results" class="results"></div>
+    </section>
+
+    <section class="card">
+      <h2>Concept</h2>
+      <ul>
+        <li>Any signal can be written as x[n] = x<sub>e</sub>[n] + x<sub>o</sub>[n].</li>
+        <li>Even part: x<sub>e</sub>[n] = (x[n] + x[-n]) / 2.</li>
+        <li>Odd part: x<sub>o</sub>[n] = (x[n] - x[-n]) / 2.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 nj • Signals & Systems mini tool</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
